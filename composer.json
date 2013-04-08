@@ -1,0 +1,19 @@
+{
+    "name": "bedrest/framework-zendframework2",
+    "description": "Zend Framework 2 integration for BedREST",
+    "require": {
+        "zendframework/zendframework": ">=2.1",
+        "bedrest/bedrest": ">=0.1"
+    },
+    "require-dev": {
+        "phing/phing": ">=2.5",
+        "phpunit/phpunit": ">=3.7"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Geoff Adams",
+            "email": "geoff@dianode.net"
+        }
+    ]
+}
