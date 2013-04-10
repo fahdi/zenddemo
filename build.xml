@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BedREST" default="build" basedir=".">
+    <!-- Generate timestamp for use elsewhere -->
+    <tstamp/>
+
+    <!-- Load build properties -->
+    <property file="build.properties" />
+
+    <!-- Filesets for the project -->
+    <fileset id="library" dir="${library.dir}" />
+    <fileset id="vendor" dir="${vendor.dir}" />
+    <fileset id="testsuite" dir="${tests.dir}">
+        <include name="**/*Test.php" />
+    </fileset>
+
+    <!-- Clean task -->
+    <target name="clean">
+        <delete dir="${build.dir}" />
+    </target>
+
+    <!-- Build task -->
+    <target name="prepare-build">
+        <mkdir dir="${build.dir}" />
+    </target>
+
+    <target name="build" depends="clean, prepare-build, test, build-reports, build-docs">
+        <copy todir="${build.dir}${library.dir}">
+            <fileset refid="library" />
+        </copy>
+    </target>
+
+    <!-- PHPUnit test suites -->
+    <target name="test" description="Runs all available tests" depends="">
+        <mkdir dir="${tests.reports.dir}" />
+        <mkdir dir="${tests.reports.logs}" />
+        <mkdir dir="${tests.reports.report}" />
+        <mkdir dir="${tests.reports.coverage}" />
+
+        <coverage-setup database="${tests.reports.logs}coverage.xml">
+            <fileset refid="library" />
+        </coverage-setup>
+
+        <phpunit printsummary="true"
+                 haltonfailure="false"
+                 haltonerror="false"
+                 codecoverage="true"
+                 bootstrap="${tests.dir}bootstrap.php">
+            <batchtest>
+                <fileset refid="library" />
+                <fileset refid="testsuite" />
+            </batchtest>
+
+            <formatter todir="${tests.reports.logs}" type="xml" />
+            <formatter todir="${tests.reports.logs}" type="clover" outfile="clover.xml" />
+        </phpunit>
+
+        <phpunitreport infile="${tests.reports.logs}testsuites.xml"
+                       format="frames"
+                       todir="${tests.reports.report}" />
+
+        <coverage-report outfile="${tests.reports.logs}coverage.xml">
+            <report todir="${tests.reports.coverage}" usesorttable="true" />
+        </coverage-report>
+    </target>
+
+    <!-- Documentation -->
+    <target name="build-docs" description="Generates all documentation" depends="api-doc">
+    </target>
+
+    <target name="api-doc" description="Generates the BedREST API Documentation">
+        <mkdir dir="${docs.api.dir}" />
+
+        <phpdoc2 title="BedREST API Documentation" destdir="${docs.api.dir}" template="responsive">
+            <fileset refid="library" />
+        </phpdoc2>
+    </target>
+
+    <!-- Reports -->
+    <target name="build-reports" description="Generates all reports" depends="php-lint, php-cs, php-md, phploc">
+    </target>
+
+    <target name="php-lint" description="Run PHP Lint">
+        <mkdir dir="${reports.dir}" />
+
+        <phplint haltonfailure="false" tofile="${reports.dir}phplint.log">
+            <fileset refid="library" />
+        </phplint>
+    </target>
+
+    <target name="php-md" description="Run PHP Mess Detector">
+        <mkdir dir="${reports.dir}" />
+
+        <phpmd rulesets="codesize,design,unusedcode">
+            <fileset refid="library" />
+
+            <formatter type="xml" outfile="${reports.dir}phpmd-report.xml" />
+            <formatter type="html" outfile="${reports.dir}phpmd-report.html" />
+        </phpmd>
+    </target>
+
+    <target name="php-cs" description="Runs PHP Code Sniffer">
+        <mkdir dir="${reports.dir}" />
+
+        <phpcodesniffer standard="PSR2" format="full"
+                        docGenerator="HTML" docFile="${reports.dir}phpcs-doc.html">
+            <fileset refid="library" />
+            <fileset refid="testsuite" />
+
+            <formatter type="default" usefile="false" />
+            <formatter type="full" outfile="${reports.dir}phpcs-report.txt" />
+            <formatter type="checkstyle" outfile="${reports.dir}phpcs-checkstyle.xml" />
+        </phpcodesniffer>
+    </target>
+
+    <target name="phploc" description="Measure project size using PHPLOC">
+        <mkdir dir="${reports.dir}" />
+
+        <exec executable="phploc">
+            <arg value="--log-csv" />
+            <arg value="${reports.dir}phploc.csv" />
+            <arg path="${library.dir}" />
+        </exec>
+    </target>
+</project>
