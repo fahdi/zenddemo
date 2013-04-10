@@ -13,4 +13,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require __DIR__ . '/src/BedRest/Framework/Zend2/Module.php';
+return array(
+    'factories' => array(
+        'bedrest.configuration' => new BedRest\Framework\Zend2\Service\ConfigurationFactory(),
+        'bedrest.restmanager'   => new BedRest\Framework\Zend2\Service\RestManagerFactory(),
+        'bedrest.resourcemetadatafactory' => new BedRest\Framework\Zend2\Service\ResourceMetadataFactoryFactory(),
+        'bedrest.servicemanager' => new BedRest\Framework\Zend2\Service\ServiceManagerFactory(),
+        'bedrest.servicemetadatafactory' => new BedRest\Framework\Zend2\Service\ServiceMetadataFactoryFactory()
+    )
+);
