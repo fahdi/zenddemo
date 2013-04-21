@@ -27,6 +27,5 @@ $loader->add('BedRest', LIBRARY_PATH);
 $loader->register();
 
 // register custom annotations
-Doctrine\Common\Annotations\AnnotationRegistry::registerFile(VENDOR_PATH . '/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 Doctrine\Common\Annotations\AnnotationRegistry::registerFile(VENDOR_PATH . '/bedrest/bedrest/library/BedRest/Resource/Mapping/Annotations.php');
 Doctrine\Common\Annotations\AnnotationRegistry::registerFile(VENDOR_PATH . '/bedrest/bedrest/library/BedRest/Service/Mapping/Annotations.php');
