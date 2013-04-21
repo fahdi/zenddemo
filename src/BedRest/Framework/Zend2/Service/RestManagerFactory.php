@@ -36,8 +36,10 @@ class RestManagerFactory implements FactoryInterface
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $rm = new RestManager();
-        $rm->setResourceMetadataFactory($serviceLocator->get('bedrest.resourcemetadatafactory'));
+        
         $rm->setContentNegotiator($serviceLocator->get('bedrest.contentnegotiator'));
+        $rm->setResourceMetadataFactory($serviceLocator->get('bedrest.resourcemetadatafactory'));
+        $rm->setServiceMetadataFactory($serviceLocator->get('bedrest.servicemetadatafactory'));
         $rm->setServiceLocator(new ServiceLocator($serviceLocator));
 
         return $rm;
