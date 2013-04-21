@@ -15,33 +15,31 @@
 
 namespace BedRest\Framework\Zend2\Service;
 
+use BedRest\Framework\Zend2\ServiceLocator;
 use BedRest\Rest\RestManager;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * RestManagerFactory
- * 
+ *
  * @author Geoff Adams <geoff@dianode.net>
  */
 class RestManagerFactory implements FactoryInterface
 {
     /**
      * Creates a RestManager.
-     * 
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     *
+     * @param  \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
      * @return \BedRest\Rest\RestManager
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $config = $serviceLocator->get('bedrest.configuration');
-        $rmf = $serviceLocator->get('bedrest.resourcemetadatafactory');
-        $sm = $serviceLocator->get('bedrest.servicemanager');
-        
-        $rm = new RestManager($config);
-        $rm->setResourceMetadataFactory($rmf);
-        $rm->setServiceManager($sm);
-        
+        $rm = new RestManager();
+        $rm->setResourceMetadataFactory($serviceLocator->get('bedrest.resourcemetadatafactory'));
+        $rm->setContentNegotiator($serviceLocator->get('bedrest.contentnegotiator'));
+        $rm->setServiceLocator(new ServiceLocator($serviceLocator));
+
         return $rm;
     }
 }

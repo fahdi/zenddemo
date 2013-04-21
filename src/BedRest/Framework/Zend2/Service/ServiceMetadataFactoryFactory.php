@@ -24,23 +24,22 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * ServiceMetadataFactoryFactory
- * 
+ *
  * @author Geoff Adams <geoff@dianode.net>
  */
 class ServiceMetadataFactoryFactory implements FactoryInterface
 {
     /**
      * Creates a ServiceMetadataFactory.
-     * 
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     *
+     * @param  \Zend\ServiceManager\ServiceLocatorInterface    $serviceLocator
      * @return \BedRest\Service\Mapping\ServiceMetadataFactory
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        // metadata factory
         $driver = new ServiceAnnotationDriver(new AnnotationReader());
         $cache = new ArrayCache();
-        
+
         return new ServiceMetadataFactory($driver, $cache);
     }
 }

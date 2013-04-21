@@ -24,7 +24,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * ResourceMetadataFactoryFactory
- * 
+ *
  * @author Geoff Adams <geoff@dianode.net>
  */
 class ResourceMetadataFactoryFactory implements FactoryInterface
@@ -32,18 +32,19 @@ class ResourceMetadataFactoryFactory implements FactoryInterface
     /**
      * Creates a ResourceMetadataFactory.
      *
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     * @param  \Zend\ServiceManager\ServiceLocatorInterface      $serviceLocator
      * @return \BedRest\Resource\Mapping\ResourceMetadataFactory
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $config = $serviceLocator->get('bedrest.configuration');
-        
+        $options = $serviceLocator->get('Config');
+        $options = $options['bedrest'];
+
         $driver = new ResourceAnnotationDriver(new AnnotationReader());
-        $driver->addPaths($config->getResourcePaths());
+        $driver->addPaths($options['resource_paths']);
 
         $cache = new ArrayCache();
-        
-        return new ResourceMetadataFactory($config, $driver, $cache);
+
+        return new ResourceMetadataFactory($driver, $cache);
     }
 }

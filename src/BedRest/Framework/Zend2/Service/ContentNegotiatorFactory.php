@@ -15,44 +15,31 @@
 
 namespace BedRest\Framework\Zend2\Service;
 
-use BedRest\Service\ServiceManager;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use BedRest\Content\Negotiation\Negotiator;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * ServiceManagerFactory
+ * ContentNegotiatorFactory
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class ServiceManagerFactory implements FactoryInterface
+class ContentNegotiatorFactory implements FactoryInterface
 {
     /**
-     * Creates a ServiceManager
-     * 
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
-     * @return \BedRest\Service\ServiceManager
+     * Create service
+     *
+     * @param  ServiceLocatorInterface $serviceLocator
+     * @return mixed
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $serviceManager = new ServiceManager();
-     
-        $factory = $serviceLocator->get('bedrest.servicemetadatafactory');
-        $serviceManager->setServiceMetadataFactory($factory);
+        $options = $serviceLocator->get('Config');
+        $options = $options['bedrest'];
 
-        // service container
-        $container = new ContainerBuilder();
+        $negotiator = new Negotiator();
+        $negotiator->setSupportedMediaTypes($options['supported_content_types']);
 
-        if ($serviceLocator->has('doctrine.entitymanager.orm_default')) {
-            $container->setParameter(
-                'doctrine.entityManager',
-                $serviceLocator->get('doctrine.entitymanager.orm_default')
-            );
-        }
-        
-        $serviceManager->setServiceContainer($container);
-        
-        return $serviceManager;
+        return $negotiator;
     }
 }

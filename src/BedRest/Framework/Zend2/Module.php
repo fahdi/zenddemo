@@ -24,7 +24,7 @@ use Zend\Mvc\MvcEvent;
 
 /**
  * Module.
- * 
+ *
  * @author Geoff Adams <geoff@dianode.net>
  */
 class Module implements
@@ -48,7 +48,7 @@ class Module implements
      */
     public function onBootstrap(MvcEvent $e)
     {
-        
+
     }
 
     /**

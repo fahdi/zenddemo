@@ -13,34 +13,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace BedRest\Framework\Zend2\Service;
+namespace BedRest\Framework\Zend2;
 
-use BedRest\Rest\Configuration;
-use Zend\ServiceManager\FactoryInterface;
+use BedRest\Service\LocatorInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * ConfigurationFactory
- * 
+ * ServiceLocator
+ *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class ConfigurationFactory implements FactoryInterface
+class ServiceLocator implements LocatorInterface
 {
     /**
-     * Creates a Configuration object.
-     *
-     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
-     * @return \BedRest\Rest\Configuration
+     * @var \Zend\ServiceManager\ServiceLocatorInterface
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    protected $serviceLocator;
+
+    /**
+     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
+     */
+    public function __construct(ServiceLocatorInterface $serviceLocator)
     {
-        $options = $serviceLocator->get('Config');
-        $options = $options['bedrest'];
-        
-        $config = new Configuration();
-        $config->setContentTypes($options['content_types']);
-        $config->setResourcePaths($options['resource_paths']);
-        
-        return $config;
+        $this->serviceLocator = $serviceLocator;
+    }
+
+    /**
+     * Retrieves a service referenced by its name.
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function get($name)
+    {
+        return $this->serviceLocator->get($name);
+    }
+
+    /**
+     * Checks for the existence of a service.
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function has($name)
+    {
+        return $this->serviceLocator->has($name);
     }
 }

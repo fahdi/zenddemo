@@ -15,8 +15,8 @@
 
 return array(
     'bedrest' => array(
-        'content_types' => array(
-            'application/json'
+        'supported_content_types' => array(
+            'application/json' => 'BedRest\Content\Converter\Json'
         ),
         'resource_paths' => array()
     )
