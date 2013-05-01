@@ -109,9 +109,7 @@ class ExceptionStrategy implements ListenerAggregateInterface
             );
         }
 
-        $model = new ViewModel(array(
-            'data' => $data
-        ));
+        $model = new ViewModel($data);
 
         // TODO: allow the fallback content type to be specified in configuration
         $model->setAccept(new MediaTypeList(array('application/json')));

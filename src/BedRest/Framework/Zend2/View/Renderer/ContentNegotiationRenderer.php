@@ -66,7 +66,7 @@ class ContentNegotiationRenderer implements RendererInterface
      */
     public function render($nameOrModel, $values = null)
     {
-        $result = $this->negotiator->negotiate($nameOrModel->getVariable('data'), $nameOrModel->getAccept());
+        $result = $this->negotiator->negotiate($nameOrModel->getVariables(), $nameOrModel->getAccept());
 
         return $result;
     }
