@@ -63,7 +63,13 @@ class ExceptionStrategy implements ListenerAggregateInterface
     {
         $this->listeners[] = $events->attach(
             MvcEvent::EVENT_RENDER_ERROR,
-            array($this, 'forceFallbackViewModel'),
+            array($this, 'prepareExceptionViewModel'),
+            $priority
+        );
+
+        $this->listeners[] = $events->attach(
+            MvcEvent::EVENT_DISPATCH_ERROR,
+            array($this, 'prepareExceptionViewModel'),
             $priority
         );
     }
@@ -80,7 +86,11 @@ class ExceptionStrategy implements ListenerAggregateInterface
         }
     }
 
-    public function forceFallbackViewModel(MvcEvent $e)
+    /**
+     * Replaces the view model with one populated with error information.
+     * @param \Zend\Mvc\MvcEvent $e
+     */
+    public function prepareExceptionViewModel(MvcEvent $e)
     {
         $data = array(
             'message' => 'An error occurred during execution; please try again later.',
