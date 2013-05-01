@@ -21,6 +21,9 @@ return array(
         'resource_paths' => array()
     ),
     'view_manager' => array(
+        'mvc_strategies' => array(
+            'BedRest.ExceptionStrategy',
+        ),
         'strategies' => array(
             'BedRest.ContentNegotiationStrategy',
         ),
