@@ -35,14 +35,12 @@ class ContentNegotiationStrategy implements ListenerAggregateInterface
     protected $listeners = array();
 
     /**
-     * @var ContentNegotiationRenderer
+     * @var \BedRest\Framework\Zend2\View\Renderer\ContentNegotiationRenderer
      */
     protected $renderer;
 
     /**
-     * Constructor
-     *
-     * @param ContentNegotiationRenderer $renderer
+     * @param \BedRest\Framework\Zend2\View\Renderer\ContentNegotiationRenderer $renderer
      */
     public function __construct(ContentNegotiationRenderer $renderer)
     {
@@ -50,11 +48,8 @@ class ContentNegotiationStrategy implements ListenerAggregateInterface
     }
 
     /**
-     * Attach the aggregate to the specified event manager
-     *
-     * @param  EventManagerInterface $events
-     * @param  int                   $priority
-     * @return void
+     * @param \Zend\EventManager\EventManagerInterface $events
+     * @param int                                      $priority
      */
     public function attach(EventManagerInterface $events, $priority = 1)
     {
@@ -63,10 +58,7 @@ class ContentNegotiationStrategy implements ListenerAggregateInterface
     }
 
     /**
-     * Detach aggregate listeners from the specified event manager
-     *
-     * @param  EventManagerInterface $events
-     * @return void
+     * @param \Zend\EventManager\EventManagerInterface $events
      */
     public function detach(EventManagerInterface $events)
     {
@@ -78,8 +70,8 @@ class ContentNegotiationStrategy implements ListenerAggregateInterface
     }
 
     /**
-     * @param  ViewEvent                  $e
-     * @return ContentNegotiationRenderer
+     * @param  \Zend\View\ViewEvent                                              $e
+     * @return \BedRest\Framework\Zend2\View\Renderer\ContentNegotiationRenderer
      */
     public function selectRenderer(ViewEvent $e)
     {
@@ -93,7 +85,7 @@ class ContentNegotiationStrategy implements ListenerAggregateInterface
     /**
      * Inject the response with the JSON payload and appropriate Content-Type header
      *
-     * @param  ViewEvent $e
+     * @param  \Zend\View\ViewEvent $e
      * @return void
      */
     public function injectResponse(ViewEvent $e)

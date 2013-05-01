@@ -41,13 +41,9 @@ class ContentNegotiationRenderer implements RendererInterface
     }
 
     /**
-     * Return the template engine object, if any
+     * Returns the content negotiator used for view rendering.
      *
-     * If using a third-party template engine, such as Smarty, patTemplate,
-     * phplib, etc, return the template engine object. Useful for calling
-     * methods on these objects, such as for setting filters, modifiers, etc.
-     *
-     * @return mixed
+     * @return \BedRest\Content\Negotiation\Negotiator
      */
     public function getEngine()
     {
@@ -55,8 +51,6 @@ class ContentNegotiationRenderer implements RendererInterface
     }
 
     /**
-     * Set the resolver used to map a template name to a resource the renderer may consume.
-     *
      * @param  ResolverInterface $resolver
      * @return RendererInterface
      */
@@ -66,8 +60,6 @@ class ContentNegotiationRenderer implements RendererInterface
     }
 
     /**
-     * Processes a view script and returns the output.
-     *
      * @param  string|ModelInterface   $nameOrModel The script/resource process, or a view model
      * @param  null|array|\ArrayAccess $values      Values to use during rendering
      * @return string                  The script output.

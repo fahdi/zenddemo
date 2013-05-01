@@ -19,6 +19,6 @@ return array(
         'BedRest.ResourceMetadataFactory'       => 'BedRest\Framework\Zend2\Service\ResourceMetadataFactoryFactory',
         'BedRest.ServiceMetadataFactory'        => 'BedRest\Framework\Zend2\Service\ServiceMetadataFactoryFactory',
         'BedRest.ContentNegotiator'             => 'BedRest\Framework\Zend2\Service\ContentNegotiatorFactory',
-        'BedRest.ContentNegotiationStrategy'    => 'BedRest\Framework\Zend2\Service\ContentNegotiationStrategyFactory',
+        'BedRest.ContentNegotiationStrategy'    => 'BedRest\Framework\Zend2\View\Service\ContentNegotiationStrategyFactory',
     )
 );

@@ -13,7 +13,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace BedRest\Framework\Zend2\Service;
+namespace BedRest\Framework\Zend2\View\Service;
 
 use BedRest\Framework\Zend2\View\Renderer\ContentNegotiationRenderer;
 use BedRest\Framework\Zend2\View\Strategy\ContentNegotiationStrategy;
