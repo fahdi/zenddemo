@@ -13,12 +13,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-return array(
-    'factories' => array(
-        'BedRest.RestManager'                   => 'BedRest\Framework\Zend2\Service\RestManagerFactory',
-        'BedRest.ResourceMetadataFactory'       => 'BedRest\Framework\Zend2\Service\ResourceMetadataFactoryFactory',
-        'BedRest.ServiceMetadataFactory'        => 'BedRest\Framework\Zend2\Service\ServiceMetadataFactoryFactory',
-        'BedRest.ContentNegotiator'             => 'BedRest\Framework\Zend2\Service\ContentNegotiatorFactory',
-        'BedRest.ContentNegotiationStrategy'    => 'BedRest\Framework\Zend2\Service\ContentNegotiationStrategyFactory',
-    )
-);
+namespace BedRest\Framework\Zend2\View\Model;
+
+use Zend\View\Model\ViewModel as ZendViewModel;
+
+class ViewModel extends ZendViewModel
+{
+    /**
+     * We won't be capturing into a parent container.
+     *
+     * @var string
+     */
+    protected $captureTo = null;
+
+    /**
+     * JSON is usually terminal
+     *
+     * @var bool
+     */
+    protected $terminate = true;
+
+    /**
+     * @var \BedRest\Content\Negotiation\MediaTypeList
+     */
+    protected $accept;
+
+    /**
+     * @param \BedRest\Content\Negotiation\MediaTypeList $accept
+     */
+    public function setAccept($accept)
+    {
+        $this->accept = $accept;
+    }
+
+    /**
+     * @return \BedRest\Content\Negotiation\MediaTypeList
+     */
+    public function getAccept()
+    {
+        return $this->accept;
+    }
+}

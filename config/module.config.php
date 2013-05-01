@@ -19,5 +19,10 @@ return array(
             'application/json' => 'BedRest\Content\Converter\Json'
         ),
         'resource_paths' => array()
+    ),
+    'view_manager' => array(
+        'strategies' => array(
+            'BedRest.ContentNegotiationStrategy',
+        ),
     )
 );

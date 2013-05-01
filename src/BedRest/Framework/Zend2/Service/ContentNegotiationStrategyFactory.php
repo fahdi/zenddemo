@@ -15,33 +15,32 @@
 
 namespace BedRest\Framework\Zend2\Service;
 
-use BedRest\Framework\Zend2\ServiceLocator;
-use BedRest\Rest\RestManager;
+use BedRest\Framework\Zend2\View\Renderer\ContentNegotiationRenderer;
+use BedRest\Framework\Zend2\View\Strategy\ContentNegotiationStrategy;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * RestManagerFactory
+ * ContentNegotiationStrategyFactory
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class RestManagerFactory implements FactoryInterface
+class ContentNegotiationStrategyFactory implements FactoryInterface
 {
+
     /**
-     * Creates a RestManager.
+     * Create service
      *
-     * @param  \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
-     * @return \BedRest\Rest\RestManager
+     * @param  ServiceLocatorInterface $serviceLocator
+     * @return mixed
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $rm = new RestManager();
+        $negotiator = $serviceLocator->get('BedRest.ContentNegotiator');
+        $renderer = new ContentNegotiationRenderer($negotiator);
 
-        $rm->setContentNegotiator($serviceLocator->get('BedRest.ContentNegotiator'));
-        $rm->setResourceMetadataFactory($serviceLocator->get('BedRest.ResourceMetadataFactory'));
-        $rm->setServiceMetadataFactory($serviceLocator->get('BedRest.ServiceMetadataFactory'));
-        $rm->setServiceLocator(new ServiceLocator($serviceLocator));
+        $strategy = new ContentNegotiationStrategy($renderer);
 
-        return $rm;
+        return $strategy;
     }
 }
