@@ -36,7 +36,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
      * @var string
      */
     protected $resourceName = '';
-    
+
     /**
      * @var \BedRest\Rest\Request\Request
      */
@@ -47,14 +47,14 @@ abstract class AbstractRestfulController extends ZendAbstractController
         if (!$request instanceof HttpRequest) {
             throw new Exception\InvalidArgumentException('Expected an HTTP request');
         }
-        
+
         $e = $this->getEvent();
-        
+
         $this->bedRestRequest = $this->createBedRestRequest($request, $e->getRouteMatch());
-        
+
         return parent::dispatch($request, $response);
     }
-    
+
     public function onDispatch(MvcEvent $e)
     {
         $request = $this->bedRestRequest;
@@ -79,7 +79,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
         if (count($data) === 1) {
             $data = reset($data);
         }
-        
+
         // TODO: investigate whether there is another way to pass the Accept list through to the renderer
         $result = new ViewModel($data);
         $result->setAccept($request->getAccept());
@@ -88,7 +88,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
 
         return $result;
     }
-    
+
     /**
      * @param  \Zend\Mvc\MvcEvent            $e
      * @return \BedRest\Rest\Request\Request
@@ -98,18 +98,23 @@ abstract class AbstractRestfulController extends ZendAbstractController
         $brRequest = new Request();
 
         $method = strtoupper($request->getMethod());
+
         $id = $routeMatch->getParam('id', false);
-        
-        if ($id === false) {
-            $method .= '_COLLECTION';
-        } else {
+        if ($id !== false) {
             $brRequest->setParameter('identifier', $id);
         }
-        
+
+        if ($method == 'GET' && $id === false) {
+            $method = 'GET_COLLECTION';
+        }
+
         $brRequest->setMethod(constant('BedRest\Rest\Request\Type::METHOD_' . $method));
         // TODO: need to correlate controllers with the resources
         $brRequest->setResource($this->resourceName);
-        $brRequest->setContent($request->getContent());
+
+        /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
+        $negotiator = $this->getServiceLocator()->get('BedRest.ContentNegotiator');
+        $brRequest->setContent($negotiator->decode($request->getContent(), $brRequest->getContentType()));
 
         return $brRequest;
     }
