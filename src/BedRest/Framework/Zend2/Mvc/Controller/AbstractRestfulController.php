@@ -113,8 +113,12 @@ abstract class AbstractRestfulController extends ZendAbstractController
         $brRequest->setResource($this->resourceName);
 
         /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
-        $negotiator = $this->getServiceLocator()->get('BedRest.ContentNegotiator');
-        $brRequest->setContent($negotiator->decode($request->getContent(), $brRequest->getContentType()));
+        $requestContent = $request->getContent();
+        $requestContentType = $brRequest->getContentType();
+        if (strlen($requestContent) !== 0 && !empty($requestContentType)) {
+            $negotiator = $this->getServiceLocator()->get('BedRest.ContentNegotiator');
+            $brRequest->setContent($negotiator->decode($requestContent, $requestContentType));
+        }
 
         return $brRequest;
     }
