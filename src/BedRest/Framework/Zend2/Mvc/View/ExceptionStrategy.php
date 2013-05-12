@@ -20,6 +20,7 @@ use BedRest\Framework\Zend2\View\Model\ViewModel;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\Http\Response as HttpResponse;
+use Zend\Mvc\Application;
 use Zend\Mvc\MvcEvent;
 
 /**
@@ -92,45 +93,54 @@ class ExceptionStrategy implements ListenerAggregateInterface
      */
     public function prepareExceptionViewModel(MvcEvent $e)
     {
-        $data = array(
-            'message' => 'An error occurred during execution; please try again later.',
-        );
+        $error = $e->getError();
+        if (empty($error)) {
+            return;
+        }
 
-        if ($this->displayExceptions) {
-            /** @var \Exception $ex */
-            $ex = $e->getParam('exception');
-            $data['exception'] = array(
-                'type' => get_class($ex),
-                'code' => $ex->getCode(),
-                'message' => $ex->getMessage(),
-                'file' => $ex->getFile(),
-                'line' => $ex->getLine(),
-                'trace' => $ex->getTrace()
-            );
+        $data = array('message' => 'Error encountered');
+        $code = 500;
+
+        switch ($error) {
+            case Application::ERROR_CONTROLLER_NOT_FOUND:
+            case Application::ERROR_CONTROLLER_INVALID:
+            case Application::ERROR_ROUTER_NO_MATCH:
+                $data['message'] = 'Invalid resource specified';
+                $code = 404;
+                break;
+            case Application::ERROR_EXCEPTION:
+                if ($this->displayExceptions) {
+                    /** @var \Exception $ex */
+                    $ex = $e->getParam('exception');
+                    $data['exception'] = array(
+                        'type'      => get_class($ex),
+                        'code'      => $ex->getCode(),
+                        'message'   => $ex->getMessage(),
+                        'file'      => $ex->getFile(),
+                        'line'      => $ex->getLine(),
+                        'trace'     => $ex->getTrace()
+                    );
+                }
+                break;
         }
 
         $model = new ViewModel($data);
-
         // TODO: allow the fallback content type to be specified in configuration
         $model->setAccept(new MediaTypeList(array('application/json')));
 
         $e->setResult($model);
-
-        // we reset this here to ensure the default ExceptionStrategy doesn't simply override the work done in here
-        // see http://stackoverflow.com/questions/12693762/define-a-custom-exceptionstrategy-in-a-zf2-module
-        $e->setError(false);
 
         /** @var \Zend\Http\Response $response */
         $response = $e->getResponse();
 
         if (!$response) {
             $response = new HttpResponse();
-            $response->setStatusCode(500);
+            $response->setStatusCode($code);
             $e->setResponse($response);
         } else {
             $statusCode = $response->getStatusCode();
             if ($statusCode === 200) {
-                $response->setStatusCode(500);
+                $response->setStatusCode($code);
             }
         }
 

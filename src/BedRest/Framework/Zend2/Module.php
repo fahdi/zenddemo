@@ -48,7 +48,15 @@ class Module implements
      */
     public function onBootstrap(MvcEvent $e)
     {
+        $app = $e->getApplication();
+        $events = $app->getEventManager();
 
+        // disable the default MVC strategies
+        /** @var \Zend\Mvc\View\Http\ViewManager $viewManager */
+        $viewManager = $app->getServiceManager()->get('ViewManager');
+        /** @var \Zend\EventManager\EventManager $eventManager */
+        $events->detach($viewManager->getRouteNotFoundStrategy());
+        $events->detach($viewManager->getExceptionStrategy());
     }
 
     /**
