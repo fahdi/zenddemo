@@ -15,7 +15,7 @@
 
 return array(
     'factories' => array(
-        'BedRest.RestManager'                   => 'BedRest\Framework\Zend2\Service\RestManagerFactory',
+        'BedRest.Dispatcher'                    => 'BedRest\Framework\Zend2\Service\DispatcherFactory',
         'BedRest.ResourceMetadataFactory'       => 'BedRest\Framework\Zend2\Service\ResourceMetadataFactoryFactory',
         'BedRest.ServiceMetadataFactory'        => 'BedRest\Framework\Zend2\Service\ServiceMetadataFactoryFactory',
         'BedRest.ContentNegotiator'             => 'BedRest\Framework\Zend2\Service\ContentNegotiatorFactory',

@@ -57,32 +57,14 @@ abstract class AbstractRestfulController extends ZendAbstractController
 
     public function onDispatch(MvcEvent $e)
     {
-        $request = $this->bedRestRequest;
+        /** @var \BedRest\Rest\Dispatcher $dispatcher */
+        $dispatcher = $this->getServiceLocator()->get('BedRest.Dispatcher');
 
-        /** @var \BedRest\Resource\Mapping\ResourceMetadataFactory $resourceMetadataFactory */
-        $resourceMetadataFactory = $this->getServiceLocator()->get('BedRest.ResourceMetadataFactory');
-        $resourceMetadata = $resourceMetadataFactory->getMetadataByResourceName($request->getResource());
-
-        $service = $this->getServiceLocator()->get($resourceMetadata->getService());
-
-        /** @var \BedRest\Service\Mapping\ServiceMetadataFactory $serviceMetadataFactory */
-        $serviceMetadataFactory = $this->getServiceLocator()->get('BedRest.ServiceMetadataFactory');
-        $serviceMetadata = $serviceMetadataFactory->getMetadataFor(get_class($service));
-
-        $listeners = $serviceMetadata->getListeners($request->getMethod());
-
-        $data = array();
-        foreach ($listeners as $listener) {
-            $data[] = $service->$listener($request);
-        }
-
-        if (count($data) === 1) {
-            $data = reset($data);
-        }
+        $data = $dispatcher->dispatch($this->bedRestRequest);
 
         // TODO: investigate whether there is another way to pass the Accept list through to the renderer
         $result = new ViewModel($data);
-        $result->setAccept($request->getAccept());
+        $result->setAccept($this->bedRestRequest->getAccept());
 
         $e->setResult($result);
 
@@ -90,7 +72,9 @@ abstract class AbstractRestfulController extends ZendAbstractController
     }
 
     /**
-     * @param  \Zend\Mvc\MvcEvent            $e
+     * @param \Zend\Http\Request               $request
+     * @param \Zend\Mvc\Router\Http\RouteMatch $routeMatch
+     *
      * @return \BedRest\Rest\Request\Request
      */
     protected function createBedRestRequest(HttpRequest $request, RouteMatch $routeMatch)

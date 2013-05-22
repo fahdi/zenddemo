@@ -15,32 +15,35 @@
 
 namespace BedRest\Framework\Zend2\Service;
 
+use BedRest\Events\Driver\AnnotationDriver;
+use BedRest\Events\EventManager;
 use BedRest\Framework\Zend2\ServiceLocator;
-use BedRest\Rest\RestManager;
+use BedRest\Rest\Dispatcher;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * RestManagerFactory
+ * DispatcherFactory
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class RestManagerFactory implements FactoryInterface
+class DispatcherFactory implements FactoryInterface
 {
     /**
      * Creates a RestManager.
      *
      * @param  \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
-     * @return \BedRest\Rest\RestManager
+     * @return \BedRest\Rest\Dispatcher
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $rm = new RestManager();
+        $rm = new Dispatcher();
 
-        $rm->setContentNegotiator($serviceLocator->get('BedRest.ContentNegotiator'));
         $rm->setResourceMetadataFactory($serviceLocator->get('BedRest.ResourceMetadataFactory'));
         $rm->setServiceMetadataFactory($serviceLocator->get('BedRest.ServiceMetadataFactory'));
         $rm->setServiceLocator(new ServiceLocator($serviceLocator));
+        $rm->setEventManager(new EventManager(new AnnotationDriver(new AnnotationReader())));
 
         return $rm;
     }

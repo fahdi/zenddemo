@@ -10,7 +10,7 @@
     ],
     "require": {
         "zendframework/zendframework": ">=2.1",
-        "bedrest/bedrest": ">=0.2.0-alpha.2"
+        "bedrest/bedrest": "dev-master"
     },
     "require-dev": {
         "phing/phing": ">=2.5",
