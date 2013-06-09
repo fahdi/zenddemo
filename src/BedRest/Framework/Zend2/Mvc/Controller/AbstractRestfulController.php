@@ -17,6 +17,7 @@ namespace BedRest\Framework\Zend2\Mvc\Controller;
 
 use BedRest\Framework\Zend2\View\Model\ViewModel;
 use BedRest\Rest\Request\Request;
+use BedRest\Rest\Request\Type as RestRequestType;
 use Zend\Mvc\Controller\AbstractController as ZendAbstractController;
 use Zend\Mvc\Exception;
 use Zend\Mvc\MvcEvent;
@@ -40,7 +41,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
     /**
      * @var \BedRest\Rest\Request\Request
      */
-    protected $bedRestRequest;
+    protected $restRequest;
 
     public function dispatch(ZendRequest $request, ZendResponse $response = null)
     {
@@ -49,8 +50,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
         }
 
         $e = $this->getEvent();
-
-        $this->bedRestRequest = $this->createBedRestRequest($request, $e->getRouteMatch());
+        $this->restRequest = $this->createRestRequest($request, $e->getRouteMatch());
 
         return parent::dispatch($request, $response);
     }
@@ -59,16 +59,38 @@ abstract class AbstractRestfulController extends ZendAbstractController
     {
         /** @var \BedRest\Rest\Dispatcher $dispatcher */
         $dispatcher = $this->getServiceLocator()->get('BedRest.Dispatcher');
+        $data = $dispatcher->dispatch($this->restRequest);
 
-        $data = $dispatcher->dispatch($this->bedRestRequest);
-
-        // TODO: investigate whether there is another way to pass the Accept list through to the renderer
         $result = new ViewModel($data);
-        $result->setAccept($this->bedRestRequest->getAccept());
+        $result->setAccept($this->restRequest->getAccept());
 
         $e->setResult($result);
 
         return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResourceName()
+    {
+        return $this->resourceName;
+    }
+
+    /**
+     * @param string $resourceName
+     */
+    public function setResourceName($resourceName)
+    {
+        $this->resourceName = $resourceName;
+    }
+
+    /**
+     * @return \BedRest\Rest\Request\Request
+     */
+    public function getRestRequest()
+    {
+        return $this->restRequest;
     }
 
     /**
@@ -77,33 +99,34 @@ abstract class AbstractRestfulController extends ZendAbstractController
      *
      * @return \BedRest\Rest\Request\Request
      */
-    protected function createBedRestRequest(HttpRequest $request, RouteMatch $routeMatch)
+    protected function createRestRequest(HttpRequest $request, RouteMatch $routeMatch)
     {
-        $brRequest = new Request();
-
-        $method = strtoupper($request->getMethod());
+        $restRequest = new Request();
 
         $id = $routeMatch->getParam('id', false);
-        if ($id !== false) {
-            $brRequest->setParameter('identifier', $id);
+        if (!empty($id)) {
+            $restRequest->setParameter('identifier', $id);
         }
 
-        if ($method == 'GET' && $id === false) {
-            $method = 'GET_COLLECTION';
+        $method = strtoupper($request->getMethod());
+        if (!empty($method)) {
+            if (empty($id) && $method !== RestRequestType::METHOD_POST) {
+                $method .= '_COLLECTION';
+            }
+            $restRequest->setMethod(constant('BedRest\Rest\Request\Type::METHOD_' . $method));
         }
 
-        $brRequest->setMethod(constant('BedRest\Rest\Request\Type::METHOD_' . $method));
-        // TODO: need to correlate controllers with the resources
-        $brRequest->setResource($this->resourceName);
+        $content = $request->getContent();
+        $contentType = $request->getHeader('Content-Type');
 
-        /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
-        $requestContent = $request->getContent();
-        $requestContentType = $brRequest->getContentType();
-        if (strlen($requestContent) !== 0 && !empty($requestContentType)) {
+        if (!empty($content) && !empty($contentType)) {
+            /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
             $negotiator = $this->getServiceLocator()->get('BedRest.ContentNegotiator');
-            $brRequest->setContent($negotiator->decode($requestContent, $requestContentType));
+
+            $restRequest->setContent($negotiator->decode($content, $contentType));
+            $restRequest->setContentType($contentType);
         }
 
-        return $brRequest;
+        return $restRequest;
     }
 }
