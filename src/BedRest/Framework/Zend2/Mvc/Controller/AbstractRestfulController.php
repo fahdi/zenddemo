@@ -17,12 +17,10 @@ namespace BedRest\Framework\Zend2\Mvc\Controller;
 
 use BedRest\Framework\Zend2\View\Model\ViewModel;
 use BedRest\Rest\Request\Request;
-use BedRest\Rest\Request\Type as RestRequestType;
 use Zend\Mvc\Controller\AbstractController as ZendAbstractController;
 use Zend\Mvc\Exception;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Request as HttpRequest;
-use Zend\Mvc\Router\Http\RouteMatch;
 use Zend\Stdlib\RequestInterface as ZendRequest;
 use Zend\Stdlib\ResponseInterface as ZendResponse;
 
@@ -49,8 +47,7 @@ abstract class AbstractRestfulController extends ZendAbstractController
             throw new Exception\InvalidArgumentException('Expected an HTTP request');
         }
 
-        $e = $this->getEvent();
-        $this->restRequest = $this->createRestRequest($request, $e->getRouteMatch());
+        $this->restRequest = $this->getServiceLocator()->get('BedRest.Request');
 
         return parent::dispatch($request, $response);
     }
@@ -91,42 +88,5 @@ abstract class AbstractRestfulController extends ZendAbstractController
     public function getRestRequest()
     {
         return $this->restRequest;
-    }
-
-    /**
-     * @param \Zend\Http\Request               $request
-     * @param \Zend\Mvc\Router\Http\RouteMatch $routeMatch
-     *
-     * @return \BedRest\Rest\Request\Request
-     */
-    protected function createRestRequest(HttpRequest $request, RouteMatch $routeMatch)
-    {
-        $restRequest = new Request();
-
-        $id = $routeMatch->getParam('id', false);
-        if (!empty($id)) {
-            $restRequest->setParameter('identifier', $id);
-        }
-
-        $method = strtoupper($request->getMethod());
-        if (!empty($method)) {
-            if (empty($id) && $method !== RestRequestType::METHOD_POST) {
-                $method .= '_COLLECTION';
-            }
-            $restRequest->setMethod(constant('BedRest\Rest\Request\Type::METHOD_' . $method));
-        }
-
-        $content = $request->getContent();
-        $contentType = $request->getHeader('Content-Type');
-
-        if (!empty($content) && !empty($contentType)) {
-            /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
-            $negotiator = $this->getServiceLocator()->get('BedRest.ContentNegotiator');
-
-            $restRequest->setContent($negotiator->decode($content, $contentType));
-            $restRequest->setContentType($contentType);
-        }
-
-        return $restRequest;
     }
 }

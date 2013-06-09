@@ -2,7 +2,6 @@
 
 namespace BedRest\Tests\Framework\Zend2\Mvc\Controller;
 
-use BedRest\Rest\Request\Type as RestRequestType;
 use BedRest\TestFixtures\ConcreteController;
 use Zend\Http\Request;
 
@@ -15,6 +14,9 @@ class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
 {
     /** @var \BedRest\TestFixtures\ConcreteController */
     protected $controller;
+
+    /** @var \PHPUnit_Framework_MockObject_MockObject */
+    protected $mockRestRequest;
 
     /** @var \PHPUnit_Framework_MockObject_MockObject */
     protected $mockRequest;
@@ -36,11 +38,9 @@ class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->mockRequest = $this->getMockBuilder('Zend\Http\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->mockRestRequest = $this->getMock('BedRest\Rest\Request\Request');
 
-        $this->mockRouteMatch = $this->getMockBuilder('Zend\Mvc\Router\Http\RouteMatch')
+        $this->mockRequest = $this->getMockBuilder('Zend\Http\Request')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -85,6 +85,8 @@ class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
             return $this->mockDispatcher;
         } elseif ($name == 'BedRest.ContentNegotiator') {
             return $this->mockNegotiator;
+        } elseif ($name == 'BedRest.Request') {
+            return $this->mockRestRequest;
         }
     }
 
@@ -119,135 +121,7 @@ class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
         $this->controller->dispatch($this->mockRequest);
 
         $restRequest = $this->controller->getRestRequest();
-        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
-        $this->assertEquals(RestRequestType::METHOD_POST, $restRequest->getMethod());
-    }
-
-    /**
-     * @test
-     */
-    public function identifierSetIfAvailable()
-    {
-        $identifier = 123;
-        $this->mockRouteMatch->expects($this->any())
-            ->method('getParam')
-            ->with('id')
-            ->will($this->returnValue($identifier));
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $restRequest = $this->controller->getRestRequest();
-        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
-        $this->assertEquals($identifier, $restRequest->getParameter('identifier'));
-    }
-
-    public function collectionRequests()
-    {
-        return array(
-            array('GET', 123, RestRequestType::METHOD_GET),
-            array('GET', null, RestRequestType::METHOD_GET_COLLECTION),
-            array('POST', 123, RestRequestType::METHOD_POST),
-            array('POST', null, RestRequestType::METHOD_POST),
-            array('PUT', 123, RestRequestType::METHOD_PUT),
-            array('PUT', null, RestRequestType::METHOD_PUT_COLLECTION),
-            array('DELETE', 123, RestRequestType::METHOD_DELETE),
-            array('DELETE', null, RestRequestType::METHOD_DELETE_COLLECTION),
-        );
-    }
-
-    /**
-     * @test
-     * @dataProvider collectionRequests
-     */
-    public function collectionRequestCorrectlyIdentified($baseMethod, $id, $expectedMethod)
-    {
-        $this->mockRequest->expects($this->any())
-            ->method('getMethod')
-            ->will($this->returnValue($baseMethod));
-
-        $this->mockRouteMatch->expects($this->any())
-            ->method('getParam')
-            ->with('id')
-            ->will($this->returnValue($id));
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $restRequest = $this->controller->getRestRequest();
-        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
-        $this->assertEquals($expectedMethod, $restRequest->getMethod());
-    }
-
-    /**
-     * @test
-     */
-    public function requestContentIsNegotiatedIfPresent()
-    {
-        $requestData = 'some request data';
-        $contentType = 'foo/bar';
-        $convertedData = 'some converted data';
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getContent')
-            ->will($this->returnValue($requestData));
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getHeader')
-            ->with('Content-Type')
-            ->will($this->returnValue($contentType));
-
-        $this->mockNegotiator->expects($this->once())
-            ->method('decode')
-            ->with($requestData, $contentType)
-            ->will($this->returnValue($convertedData));
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $restRequest = $this->controller->getRestRequest();
-        $this->assertEquals($convertedData, $restRequest->getContent());
-    }
-
-    /**
-     * @test
-     */
-    public function requestContentIsEmptyIfContentTypeMissing()
-    {
-        $requestData = 'some request data';
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getContent')
-            ->will($this->returnValue($requestData));
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getHeader')
-            ->with('Content-Type')
-            ->will($this->returnValue(null));
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $restRequest = $this->controller->getRestRequest();
-        $this->assertEquals(null, $restRequest->getContent());
-    }
-
-    /**
-     * @test
-     */
-    public function requestContentIsEmptyIfContentMissing()
-    {
-        $contentType = 'foo/bar';
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getContent')
-            ->will($this->returnValue(null));
-
-        $this->mockRequest->expects($this->atLeastOnce())
-            ->method('getHeader')
-            ->with('Content-Type')
-            ->will($this->returnValue($contentType));
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $restRequest = $this->controller->getRestRequest();
-        $this->assertEquals(null, $restRequest->getContent());
+        $this->assertEquals($this->mockRestRequest, $restRequest);
     }
 
     /**
@@ -262,26 +136,6 @@ class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
             ->with($this->controller->getRestRequest());
 
         $this->controller->onDispatch($this->mockEvent);
-    }
-
-    /**
-     * @test
-     */
-    public function viewModelReturnedWithDataFromDispatcher()
-    {
-        $returnedData = array('content' => 'some data');
-
-        $this->controller->dispatch($this->mockRequest);
-
-        $this->mockDispatcher->expects($this->once())
-            ->method('dispatch')
-            ->with($this->controller->getRestRequest())
-            ->will($this->returnValue($returnedData));
-
-        $result = $this->controller->onDispatch($this->mockEvent);
-
-        $this->assertInstanceOf('BedRest\Framework\Zend2\View\Model\ViewModel', $result);
-        $this->assertEquals($returnedData['content'], $result->getVariable('content'));
     }
 
     /**
