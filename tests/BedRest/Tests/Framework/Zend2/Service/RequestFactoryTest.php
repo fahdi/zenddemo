@@ -177,10 +177,13 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
             ->method('getContent')
             ->will($this->returnValue($requestData));
 
+        $mockContentType = $this->getMock('Zend\Http\Header\ContentType');
+        $mockContentType->value = $contentType;
+
         $this->mockRequest->expects($this->atLeastOnce())
             ->method('getHeader')
             ->with('Content-Type')
-            ->will($this->returnValue($contentType));
+            ->will($this->returnValue($mockContentType));
 
         $this->mockNegotiator->expects($this->once())
             ->method('decode')

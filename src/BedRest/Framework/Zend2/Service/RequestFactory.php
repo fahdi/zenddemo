@@ -121,7 +121,7 @@ class RequestFactory implements FactoryInterface
             /** @var \BedRest\Content\Negotiation\Negotiator $negotiator */
             $negotiator = $serviceLocator->get('BedRest.ContentNegotiator');
 
-            $restRequest->setContent($negotiator->decode($content, $contentType));
+            $restRequest->setContent($negotiator->decode($content, $contentType->value));
             $restRequest->setContentType($contentType);
         }
     }
