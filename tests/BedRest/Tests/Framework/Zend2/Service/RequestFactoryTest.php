@@ -17,6 +17,12 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
     protected $factory;
 
     /** @var \PHPUnit_Framework_MockObject_MockObject */
+    protected $mockApplication;
+
+    /** @var \PHPUnit_Framework_MockObject_MockObject */
+    protected $mockEvent;
+
+    /** @var \PHPUnit_Framework_MockObject_MockObject */
     protected $mockRequest;
 
     /** @var \PHPUnit_Framework_MockObject_MockObject */
@@ -48,6 +54,24 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
             ->with($this->isType('string'))
             ->will($this->returnCallback(array($this, 'routeMatchGetParam')));
 
+        $this->mockEvent = $this->getMock('Zend\Mvc\MvcEvent');
+
+        $this->mockEvent->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($this->mockRequest));
+
+        $this->mockEvent->expects($this->any())
+            ->method('getRouteMatch')
+            ->will($this->returnValue($this->mockRouteMatch));
+
+        $this->mockApplication = $this->getMockBuilder('Zend\Mvc\Application')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->mockApplication->expects($this->any())
+            ->method('getMvcEvent')
+            ->will($this->returnValue($this->mockEvent));
+
         $this->mockNegotiator = $this->getMock('BedRest\Content\Negotiation\Negotiator');
 
         $this->mockServiceLocator = $this->getMock('Zend\ServiceManager\ServiceLocatorInterface');
@@ -68,10 +92,8 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
     public function serviceLocatorGet($name)
     {
         switch ($name) {
-            case 'Request':
-                return $this->mockRequest;
-            case 'RouteMatch':
-                return $this->mockRouteMatch;
+            case 'Application':
+                return $this->mockApplication;
             case 'BedRest.ContentNegotiator':
                 return $this->mockNegotiator;
         }
@@ -218,7 +240,7 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
     public function resourceNameIsDeterminedFromController()
     {
         $resourceName = 'test';
-        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['__CONTROLLER__'] = $resourceName;
 
         $restRequest = $this->factory->createService($this->mockServiceLocator);
         $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
@@ -231,7 +253,7 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
     public function subResourceNameIsCorrectlyDetermined()
     {
         $resourceName = 'test';
-        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['__CONTROLLER__'] = $resourceName;
         $subResourceName = 'sub';
         $this->routeMatchParams['subresource'] = $subResourceName;
 
@@ -270,7 +292,7 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function subResourceIdentifierSetCorrectly($resourceName, $id, $subResourceName, $subId, $shouldBeSet)
     {
-        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['__CONTROLLER__'] = $resourceName;
         $this->routeMatchParams['id'] = $id;
         $this->routeMatchParams['subresource'] = $subResourceName;
         $this->routeMatchParams['subresource_id'] = $subId;
@@ -311,7 +333,7 @@ class RequestFactoryTest extends \PHPUnit_Framework_TestCase
 
         $this->routeMatchParams['id'] = $id;
         $this->routeMatchParams['subresource_id'] = $subId;
-        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['__CONTROLLER__'] = $resourceName;
         $this->routeMatchParams['subresource'] = $subResourceName;
 
         $this->mockRequest->expects($this->any())

@@ -24,10 +24,11 @@ class RequestFactory implements FactoryInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        /** @var \Zend\Http\Request $httpRequest */
-        $httpRequest = $serviceLocator->get('Request');
-        /** @var \Zend\Mvc\Router\RouteMatch $routeMatch */
-        $routeMatch = $serviceLocator->get('RouteMatch');
+        /** @var \Zend\Mvc\Application $application */
+        $application = $serviceLocator->get('Application');
+        $routeMatch = $application->getMvcEvent()->getRouteMatch();
+        $httpRequest = $application->getMvcEvent()->getRequest();
+
         $restRequest = new RestRequest();
 
         $id = $routeMatch->getParam('id', null);
@@ -58,7 +59,7 @@ class RequestFactory implements FactoryInterface
             $restRequest->setParameter('identifier', $id);
         }
 
-        $restRequest->setResource($routeMatch->getParam('controller'));
+        $restRequest->setResource($routeMatch->getParam('__CONTROLLER__'));
 
         $method = strtoupper($httpRequest->getMethod());
         if (!empty($method)) {
@@ -82,7 +83,7 @@ class RequestFactory implements FactoryInterface
         $id = $routeMatch->getParam('id', null);
         $restRequest->setParameter('identifier', $id);
 
-        $resourceName = $routeMatch->getParam('controller');
+        $resourceName = $routeMatch->getParam('__CONTROLLER__');
         $subResourceName = $routeMatch->getParam('subresource', null);
         $restRequest->setResource($resourceName . '/' . $subResourceName);
 
