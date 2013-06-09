@@ -21,6 +21,6 @@ return array(
         'BedRest.ContentNegotiator'             => 'BedRest\Framework\Zend2\Service\ContentNegotiatorFactory',
         'BedRest.ContentNegotiationStrategy'    => 'BedRest\Framework\Zend2\View\Service\ContentNegotiationStrategyFactory',
         'BedRest.ExceptionStrategy'             => 'BedRest\Framework\Zend2\Mvc\Service\ExceptionStrategyFactory',
-        'BedRest.Request'                       => 'BedRest\Framework\Zend2\Service\Request'
+        'BedRest.Request'                       => 'BedRest\Framework\Zend2\Service\RequestFactory'
     )
 );
