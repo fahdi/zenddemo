@@ -2,18 +2,18 @@
 
 namespace BedRest\Tests\Framework\Zend2\Service;
 
-use BedRest\Framework\Zend2\Service\RestRequestFactory;
+use BedRest\Framework\Zend2\Service\RequestFactory;
 use BedRest\Rest\Request\Type as RestRequestType;
 use Zend\Http\Request;
 
 /**
- * RestRequestFactoryTest
+ * RequestFactoryTest
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
+class RequestFactoryTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var \BedRest\Framework\Zend2\Service\RestRequestFactory */
+    /** @var \BedRest\Framework\Zend2\Service\RequestFactory */
     protected $factory;
 
     /** @var \PHPUnit_Framework_MockObject_MockObject */
@@ -33,7 +33,7 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->factory = new RestRequestFactory();
+        $this->factory = new RequestFactory();
 
         $this->mockRequest = $this->getMockBuilder('Zend\Http\Request')
             ->disableOriginalConstructor()

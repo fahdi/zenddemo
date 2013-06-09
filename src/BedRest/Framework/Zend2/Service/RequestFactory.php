@@ -10,11 +10,11 @@ use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * RestRequestFactory
+ * RequestFactory
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class RestRequestFactory implements FactoryInterface
+class RequestFactory implements FactoryInterface
 {
     /**
      * Creates a REST Request object.
