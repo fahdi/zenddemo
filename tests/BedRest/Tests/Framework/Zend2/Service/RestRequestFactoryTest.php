@@ -22,6 +22,9 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
     /** @var \PHPUnit_Framework_MockObject_MockObject */
     protected $mockRouteMatch;
 
+    /** @var array */
+    protected $routeMatchParams = array();
+
     /** @var \PHPUnit_Framework_MockObject_MockObject */
     protected $mockNegotiator;
 
@@ -40,12 +43,26 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->mockRouteMatch->expects($this->any())
+            ->method('getParam')
+            ->with($this->isType('string'))
+            ->will($this->returnCallback(array($this, 'routeMatchGetParam')));
+
         $this->mockNegotiator = $this->getMock('BedRest\Content\Negotiation\Negotiator');
 
         $this->mockServiceLocator = $this->getMock('Zend\ServiceManager\ServiceLocatorInterface');
         $this->mockServiceLocator->expects($this->any())
             ->method('get')
             ->will($this->returnCallback(array($this, 'serviceLocatorGet')));
+    }
+
+    public function routeMatchGetParam($name)
+    {
+        if (isset($this->routeMatchParams[$name])) {
+            return $this->routeMatchParams[$name];
+        }
+
+        return null;
     }
 
     public function serviceLocatorGet($name)
@@ -91,14 +108,11 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function methodIsCorrectlyDetermined($baseMethod, $id, $expectedMethod)
     {
+        $this->routeMatchParams['id'] = $id;
+
         $this->mockRequest->expects($this->any())
             ->method('getMethod')
             ->will($this->returnValue($baseMethod));
-
-        $this->mockRouteMatch->expects($this->any())
-            ->method('getParam')
-            ->with('id')
-            ->will($this->returnValue($id));
 
         $restRequest = $this->factory->createService($this->mockServiceLocator);
         $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
@@ -111,10 +125,7 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
     public function identifierSet()
     {
         $identifier = 123;
-        $this->mockRouteMatch->expects($this->any())
-            ->method('getParam')
-            ->with('id')
-            ->will($this->returnValue($identifier));
+        $this->routeMatchParams['id'] = $identifier;
 
         $restRequest = $this->factory->createService($this->mockServiceLocator);
         $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
@@ -199,5 +210,116 @@ class RestRequestFactoryTest extends \PHPUnit_Framework_TestCase
         $restRequest = $this->factory->createService($this->mockServiceLocator);
         $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
         $this->assertEquals(null, $restRequest->getContent());
+    }
+
+    /**
+     * @test
+     */
+    public function resourceNameIsDeterminedFromController()
+    {
+        $resourceName = 'test';
+        $this->routeMatchParams['controller'] = $resourceName;
+
+        $restRequest = $this->factory->createService($this->mockServiceLocator);
+        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
+        $this->assertEquals($resourceName, $restRequest->getResource());
+    }
+
+    /**
+     * @test
+     */
+    public function subResourceNameIsCorrectlyDetermined()
+    {
+        $resourceName = 'test';
+        $this->routeMatchParams['controller'] = $resourceName;
+        $subResourceName = 'sub';
+        $this->routeMatchParams['subresource'] = $subResourceName;
+
+        $fqResource = $resourceName . '/' . $subResourceName;
+
+        // without a resource ID
+        $restRequest = $this->factory->createService($this->mockServiceLocator);
+        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
+        $this->assertEquals($resourceName, $restRequest->getResource());
+
+        // with a resource ID
+        $this->routeMatchParams['id'] = 123;
+
+        $restRequest = $this->factory->createService($this->mockServiceLocator);
+        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
+        $this->assertEquals($fqResource, $restRequest->getResource());
+    }
+
+    public function sampleSubResourceIdentifierRequests()
+    {
+        return array(
+            array('test', 123, 'sub', 456, true),
+            array('test', 123, 'sub', null, false),
+            array('test', 123, null, 456, false),
+            array('test', 123, null, null, false),
+            array('test', null, 'sub', 456, false),
+            array('test', null, 'sub', null, false),
+            array('test', null, null, 456, false),
+            array('test', null, null, null, false)
+        );
+    }
+
+    /**
+     * @test
+     * @dataProvider sampleSubResourceIdentifierRequests
+     */
+    public function subResourceIdentifierSetCorrectly($resourceName, $id, $subResourceName, $subId, $shouldBeSet)
+    {
+        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['id'] = $id;
+        $this->routeMatchParams['subresource'] = $subResourceName;
+        $this->routeMatchParams['subresource_id'] = $subId;
+
+        $restRequest = $this->factory->createService($this->mockServiceLocator);
+        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
+
+        if ($shouldBeSet) {
+            $this->assertEquals($subId, $restRequest->getParameter('subresource_identifier'));
+        } else {
+            $this->assertEmpty($restRequest->getParameter('subresource_identifier'));
+        }
+    }
+
+    public function sampleSubResourceRequests()
+    {
+        return array(
+            array('GET', 456, RestRequestType::METHOD_GET),
+            array('GET', null, RestRequestType::METHOD_GET_COLLECTION),
+            array('POST', 456, RestRequestType::METHOD_POST),
+            array('POST', null, RestRequestType::METHOD_POST),
+            array('PUT', 456, RestRequestType::METHOD_PUT),
+            array('PUT', null, RestRequestType::METHOD_PUT_COLLECTION),
+            array('DELETE', 456, RestRequestType::METHOD_DELETE),
+            array('DELETE', null, RestRequestType::METHOD_DELETE_COLLECTION),
+        );
+    }
+
+    /**
+     * @test
+     * @dataProvider sampleSubResourceRequests
+     */
+    public function methodIsCorrectlyDeterminedForSubResources($baseMethod, $subId, $expectedMethod)
+    {
+        $id = 123;
+        $resourceName = 'test';
+        $subResourceName = 'sub';
+
+        $this->routeMatchParams['id'] = $id;
+        $this->routeMatchParams['subresource_id'] = $subId;
+        $this->routeMatchParams['controller'] = $resourceName;
+        $this->routeMatchParams['subresource'] = $subResourceName;
+
+        $this->mockRequest->expects($this->any())
+            ->method('getMethod')
+            ->will($this->returnValue($baseMethod));
+
+        $restRequest = $this->factory->createService($this->mockServiceLocator);
+        $this->assertInstanceOf('BedRest\Rest\Request\Request', $restRequest);
+        $this->assertEquals($expectedMethod, $restRequest->getMethod());
     }
 }

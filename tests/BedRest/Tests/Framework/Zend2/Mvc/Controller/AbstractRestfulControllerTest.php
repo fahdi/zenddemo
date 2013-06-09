@@ -6,11 +6,11 @@ use BedRest\TestFixtures\ConcreteController;
 use Zend\Http\Request;
 
 /**
- * AbstractRestControllerTest
+ * AbstractRestfulControllerTest
  *
  * @author Geoff Adams <geoff@dianode.net>
  */
-class AbstractRestControllerTest extends \PHPUnit_Framework_TestCase
+class AbstractRestfulControllerTest extends \PHPUnit_Framework_TestCase
 {
     /** @var \BedRest\TestFixtures\ConcreteController */
     protected $controller;
