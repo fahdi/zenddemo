@@ -1,16 +1,16 @@
 {
-    "name": "bedrest/framework-zendframework2",
-    "description": "Zend Framework 2 integration for BedREST",
+    "name": "testzend",
+    "description": "Zend Framework 2 demo by Fahad",
     "license": "MIT",
     "authors": [
         {
-            "name": "Geoff Adams",
-            "email": "geoff@dianode.net"
+            "name": "Fahad Murtaza",
+            "email": "info@fahdmurtaza.com"
         }
     ],
     "require": {
         "zendframework/zendframework": ">=2.1",
-        "bedrest/bedrest": "0.2.*"
+
     },
     "require-dev": {
         "phing/phing": ">=2.5",
